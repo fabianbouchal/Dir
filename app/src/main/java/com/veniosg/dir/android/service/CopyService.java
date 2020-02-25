@@ -26,6 +26,7 @@ import com.veniosg.dir.android.fragment.FileListFragment;
 import com.veniosg.dir.mvvm.model.FileHolder;
 import com.veniosg.dir.mvvm.model.storage.operation.CopyOperation;
 import com.veniosg.dir.mvvm.model.storage.operation.MoveOperation;
+import com.veniosg.dir.mvvm.model.storage.operation.SyncOperation;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import static com.veniosg.dir.mvvm.model.storage.operation.ui.OperationStatusDis
  */
 public class CopyService extends IntentService {
     private static final String ACTION_COPY = "com.veniosg.dir.action.COPY";
+    private static final String ACTION_SYNC = "com.veniosg.dir.action.SYNC";
     private static final String ACTION_MOVE = "com.veniosg.dir.action.MOVE";
     private static final String EXTRA_FILES = "com.veniosg.dir.action.FILES";
 
@@ -75,6 +77,11 @@ public class CopyService extends IntentService {
             if (remSpace > 0) {
                 move(files, to);
             }
+        } else if (ACTION_SYNC.equals(intent.getAction())) {
+            remSpace = spaceRemainingAfterCopy(files, to);
+            if (remSpace > 0) {
+                syncTo(files, to);
+            }
         } else {
             return;
         }
@@ -88,6 +95,10 @@ public class CopyService extends IntentService {
 
     private void copy(final List<FileHolder> files, final File to) {
         operationRunner(this).run(new CopyOperation(this, operationStatusDisplayer(this)), copyArgs(files, to));
+    }
+
+    private void syncTo(final List<FileHolder> files, final File to) {
+        operationRunner(this).run(new SyncOperation(this, operationStatusDisplayer(this)), copyArgs(files, to));
     }
 
     private void move(List<FileHolder> files, File to) {
@@ -139,8 +150,19 @@ public class CopyService extends IntentService {
         i.setData(Uri.fromFile(copyTo));
         i.putParcelableArrayListExtra(EXTRA_FILES,
                 mClipboard instanceof ArrayList
-                ? (ArrayList<FileHolder>) mClipboard
-                : new ArrayList<>(mClipboard));
+                        ? (ArrayList<FileHolder>) mClipboard
+                        : new ArrayList<>(mClipboard));
+        c.startService(i);
+    }
+
+    public static void syncTo(Context c, List<FileHolder> mClipboard, File copyTo) {
+        Intent i = new Intent(ACTION_SYNC);
+        i.setClassName(c, CopyService.class.getName());
+        i.setData(Uri.fromFile(copyTo));
+        i.putParcelableArrayListExtra(EXTRA_FILES,
+                mClipboard instanceof ArrayList
+                        ? (ArrayList<FileHolder>) mClipboard
+                        : new ArrayList<>(mClipboard));
         c.startService(i);
     }
 

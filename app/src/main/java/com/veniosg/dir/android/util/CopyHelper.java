@@ -34,73 +34,88 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  * a simple interface and handling the actual operation transparently.
  */
 public class CopyHelper {
-	@Retention(SOURCE)
-	@IntDef({COPY, CUT})
-	private @interface Operation {}
-	public static final int COPY = 0;
-	@SuppressWarnings("WeakerAccess")
-    public static final int CUT = 1;
+    @Retention(SOURCE)
+    @IntDef({COPY, CUT, SYNC})
+    private @interface Operation {
+    }
 
-	private List<FileHolder> mClipboard;
-	@Operation
-	private int mOperation;
+    public static final int COPY = 0;
+    @SuppressWarnings("WeakerAccess")
+    public static final int CUT = 1;
+    public static final int SYNC = 2;
+
+    private List<FileHolder> mClipboard;
+    @Operation
+    private int mOperation;
 
     public int getItemCount() {
-        if (canPaste()){
+        if (canPaste()) {
             return mClipboard.size();
         } else {
             return 0;
         }
     }
 
-    public void copy(List<FileHolder> tbc){
-		mOperation = COPY;
-		mClipboard = tbc;
-	}
-	
-	public void copy(FileHolder tbc){
-		ArrayList<FileHolder> tbcl = new ArrayList<>();
-		tbcl.add(tbc);
-		copy(tbcl);
-	}
-	
-	public void cut(List<FileHolder> tbc){
-		mOperation = CUT;
-		mClipboard = tbc;
-	}
-	
-	public void cut(FileHolder tbc){
-		ArrayList<FileHolder> tbcl = new ArrayList<>();
-		tbcl.add(tbc);
-		cut(tbcl);
-	}
+    public void copy(List<FileHolder> tbc) {
+        mOperation = COPY;
+        mClipboard = tbc;
+    }
+
+    public void copy(FileHolder tbc) {
+        ArrayList<FileHolder> tbcl = new ArrayList<>();
+        tbcl.add(tbc);
+        copy(tbcl);
+    }
+
+    public void syncTo(List<FileHolder> tbc) {
+        mOperation = SYNC;
+        mClipboard = tbc;
+    }
+
+    public void syncTo(FileHolder tbc) {
+        ArrayList<FileHolder> tbcl = new ArrayList<>();
+        tbcl.add(tbc);
+        syncTo(tbcl);
+    }
+
+    public void cut(List<FileHolder> tbc) {
+        mOperation = CUT;
+        mClipboard = tbc;
+    }
+
+    public void cut(FileHolder tbc) {
+        ArrayList<FileHolder> tbcl = new ArrayList<>();
+        tbcl.add(tbc);
+        cut(tbcl);
+    }
 
     public void clear() {
         mClipboard.clear();
     }
 
     /**
-	 * Call this to check whether there are file references on the clipboard. 
-	 */
-	public boolean canPaste(){
-		return mClipboard != null && !mClipboard.isEmpty();
-	}
+     * Call this to check whether there are file references on the clipboard.
+     */
+    public boolean canPaste() {
+        return mClipboard != null && !mClipboard.isEmpty();
+    }
 
     @Operation
-	public int getOperationType() {
-		return mOperation;
-	}
+    public int getOperationType() {
+        return mOperation;
+    }
 
-	/**
-	 * Paste the copied/cut items.
-	 * @param copyTo Path to paste to.
-	 */
-	public void paste(Context c, File copyTo){
-		// Quick check just to make sure. Normally this should never be the case as the path we get is not user-generated.
-		if(!copyTo.isDirectory())
-			return;
-		
-		switch (mOperation) {
+    /**
+     * Paste the copied/cut items.
+     *
+     * @param copyTo Path to paste to.
+     */
+    public void paste(Context c, File copyTo) {
+        // Quick check just to make sure. Normally this should never be the case as the path we get is not user-generated.
+        if (!copyTo.isDirectory())
+            return;
+
+        switch (mOperation) {
             case COPY:
                 CopyService.copyTo(c, mClipboard, copyTo);
                 mClipboard.clear();
@@ -109,8 +124,12 @@ public class CopyHelper {
                 CopyService.moveTo(c, mClipboard, copyTo);
                 mClipboard.clear();
                 break;
+            case SYNC:
+                CopyService.syncTo(c, mClipboard, copyTo);
+                mClipboard.clear();
+                break;
             default:
                 break;
-		}
-	}
+        }
+    }
 }

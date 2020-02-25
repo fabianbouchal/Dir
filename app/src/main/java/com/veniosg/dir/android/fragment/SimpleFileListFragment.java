@@ -244,6 +244,11 @@ public class SimpleFileListFragment extends FileListFragment {
                 ((FileManagerApplication) getActivity().getApplication()).getCopyHelper().copy(fItems);
                 getActivity().supportInvalidateOptionsMenu();
                 return true;
+            case R.id.menu_sync_to:
+                mode.finish();
+                ((FileManagerApplication) getActivity().getApplication()).getCopyHelper().syncTo(fItems);
+                getActivity().supportInvalidateOptionsMenu();
+                return true;
             case R.id.menu_compress:
                 mode.finish();
                 dialog = new MultiCompressDialog();
@@ -279,6 +284,12 @@ public class SimpleFileListFragment extends FileListFragment {
             case R.id.menu_copy:
                 mode.finish();
                 ((FileManagerApplication) getActivity().getApplication()).getCopyHelper().copy(fItem);
+                getActivity().supportInvalidateOptionsMenu();
+                return true;
+
+            case R.id.menu_sync_to:
+                mode.finish();
+                ((FileManagerApplication) getActivity().getApplication()).getCopyHelper().syncTo(fItem);
                 getActivity().supportInvalidateOptionsMenu();
                 return true;
 

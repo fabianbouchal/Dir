@@ -35,6 +35,10 @@
                     android:icon="@drawable/ic_action_copy"
                     android:title="@string/menu_copy" />
                 <item
+                    android:id="@+id/menu_sync_to"
+                    android:icon="@drawable/ic_action_sync"
+                    android:title="@string/menu_sync_to" />
+                <item
                     android:id="@+id/menu_rename"
                     android:icon="@drawable/ic_action_rename"
                     android:title="@string/menu_rename" />
